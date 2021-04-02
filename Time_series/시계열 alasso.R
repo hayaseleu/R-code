@@ -2,9 +2,7 @@ library(itsmr)
 wine
 library(parcor)
 
-#log를 먼저취해야 음수가 안나옴 
-data = log(wine)
-data = diff(data, lag = 12)
+
 
 
 
@@ -23,7 +21,7 @@ ar.adaplasso = function(y, p, nf){
     id3 = id1[id1 > 0];
     X = cbind(X, c(rep(mu.s, length(id2)), y[id3]));
   }
-  pp = adalasso(X, y, k=nf, intercept=FALSE);           # intercept 포함 불포함! 
+  pp = adalasso(X, y, k=nf, intercept=TRUE);
   return(pp)
 }
 
@@ -37,7 +35,7 @@ order=5;
 A = B = matrix(0, nrep, order);
 for(r in 1:nrep){
   data = arima.sim(n = n, list(ar = phi), sd = 1)
-  y = data/sd(data);
+  y = data/sd(data);       # 왜 나눈 거지? 
   fit = ar.adaplasso(y, p=order)
   fit = ar.adaplasso(y, p=order)
   A[r,] = fit$coefficients.adalasso
@@ -49,20 +47,20 @@ par(mfrow=c(1,2))
 boxplot(A, main="aLasso");
 boxplot(B, main="Lasso");  ## aLasso가 조금 더 0으로 확실히 수렴시키는듯 
 
+
+############ 실전용 #########
 ar12 <- arima(data, c(12,0,0))
 (ar12)
 
-
-nrep=50;
-order=24;
+#log를 먼저취해야 음수가 안나옴 
+data = log(wine)
+data = diff(data, lag = 12)
+nrep=50; # LASSO 반복 
+order=12;
 A = B = matrix(0, nrep, order);
-
-st_data <- data_d1
-st_data <- data_d1_sup/sd(data_d1_sup)
 for (r in 1:nrep) {
-
-  fit = ar.adaplasso(st_data, p=order)
-  fit = ar.adaplasso(st_data, p=order)
+  fit = ar.adaplasso(data, p=order)
+  fit = ar.adaplasso(data, p=order)
   A[r,] = fit$coefficients.adalasso
   B[r,] = fit$coefficients.lasso
   print(r)
